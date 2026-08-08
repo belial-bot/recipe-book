@@ -43,8 +43,7 @@ recipe({
 
   // Ein, zwei Sätze: Herkunft, warum du es kochst, worauf zu achten ist.
   intro:
-    "Hier etwas Nützliches schreiben: woher das Rezept kommt, warum du es " +
-    "machst, wo die Fallstricke liegen.",
+    "Diese herzhafte Kürbis-Quiche kombiniert einen knusprigen Mürbeteig mit einer cremigen Füllung aus aromatischem Hokkaido, Schinken und geschmolzenem Käse. Sie lässt sich unkompliziert zubereiten und ist sowohl warm als auch kalt ein absoluter Genuss.",
 
   // OPTIONAL. Ganzer Block löschbar — dann erscheint kein Nährwert-Abschnitt.
   // Werte pro Portion. Einzelne Zeilen weglassen ist ebenfalls in Ordnung.
