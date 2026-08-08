@@ -95,9 +95,6 @@ recipe({
   notes: [
     "Schmeckt auch ohne Schinken gut.",
     "Der Hokkaido-Kürbis muss nicht geschält werden. Ein kurzes Anbraten in der Pfanne reicht völlig aus, da er im Ofen während der 45 Minuten fertig gart.",
-    "Angebratenen Kürbis im Sieb abtropfen lassen, damit der Boden nicht wässrig wird.",
-    "Teigboden vor dem Belegen 10 Min. blind vorbacken verhindert Durchweichen.",
-
   ],
 
   // Woher das Rezept stammt. Text, optional mit Link.
