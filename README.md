@@ -1,8 +1,6 @@
 # Das Rezeptbuch
 
-Eine statische Rezeptseite. Kein Build-Schritt, keine Abhängigkeiten, kein
-Server — `index.html` öffnen und es läuft, egal ob von der Festplatte oder von
-GitHub Pages.
+Eine statische Rezeptseite.
 
 ---
 
@@ -29,10 +27,6 @@ window.RECIPE_FILES = [
   "miso-aubergine",          // ← neu, ganz unten
 ];
 ```
-
-Das war's. Übersicht, Suche, Kategoriefilter, Zähler und die Vor/Zurück-Links
-ziehen sich das beim nächsten Laden von selbst.
-
 > **Warum zwei Schritte?** Damit die Rezeptdaten an genau einer Stelle liegen.
 > Die Übersicht liest dieselbe Datei wie die Rezeptseite, also können die
 > beiden nie auseinanderlaufen. Die Liste ist nur das Inhaltsverzeichnis.
