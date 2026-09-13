@@ -33,12 +33,17 @@
     level: "Niveau",
 
     ingredients: "Zutaten",
-    equipment: "Ausstattung",
     method: "Zubereitung",
     notes: "Notizen",
-    gallery: "Weitere Bilder",
     nutrition: "Nährwerte",
     perServing: "pro Portion",
+    nutriFor: "für",              // "für 4 Portionen"
+
+    imagePrev: "Vorheriges Bild",
+    imageNext: "Nächstes Bild",
+    imageGo: "Bild %s anzeigen",
+    imageZoom: "Bild vergrößern",
+    imageClose: "Schließen",
 
     scale: "Menge<br>anpassen",
     fewer: "Weniger Portionen",
@@ -63,19 +68,15 @@
     hour: "Std.",
 
     // Keys of the `nutrition` object, in the order they should appear.
+    // Four figures, because those are the four anyone reads.
     nutriLabels: {
       kcal: "Kalorien",
       protein: "Eiweiß",
       carbs: "Kohlenhydrate",
-      sugar: "davon Zucker",
       fat: "Fett",
-      saturates: "davon gesättigt",
-      fibre: "Ballaststoffe",
-      salt: "Salz",
     },
     nutriUnits: {
-      kcal: "kcal", protein: "g", carbs: "g", sugar: "g",
-      fat: "g", saturates: "g", fibre: "g", salt: "g",
+      kcal: "kcal", protein: "g", carbs: "g", fat: "g",
     },
   };
 
@@ -244,6 +245,11 @@
     return m ? h + " " + T.hour + " " + m + " " + T.minute : h + " " + T.hour;
   }
 
+  /* The yield unit in the right number. */
+  function servingsUnit(r, n) {
+    return n === 1 ? r.servingsUnitOne : r.servingsUnit;
+  }
+
   function totalMinutes(r) {
     var t = r.times || {};
     if (t.total) return t.total;
@@ -257,11 +263,13 @@
     r.slug = r.slug || slugify(r.title);
     r.tags = r.tags || [];
     r.images = (r.images || []).filter(Boolean);
-    r.equipment = r.equipment || [];
     r.notes = r.notes || [];
     r.times = r.times || {};
     r.servings = r.servings || 0;
     r.servingsUnit = r.servingsUnit || "servings";
+    // "1 Portion", not "1 Portionen". Falls back to the plural when a recipe
+    // doesn't bother, which is fine for units that don't change ("Stück").
+    r.servingsUnitOne = r.servingsUnitOne || r.servingsUnit;
 
     r.ingredients = (r.ingredients || []).map(function (i) {
       return typeof i === "string" ? { name: i } : i;
@@ -275,7 +283,6 @@
       r.title, r.subtitle, r.category, r.intro,
       r.tags.join(" "),
       r.ingredients.map(function (i) { return (i.name || "") + " " + (i.heading || ""); }).join(" "),
-      r.equipment.join(" "),
     ].join(" ").toLowerCase();
 
     r._total = totalMinutes(r);
@@ -410,6 +417,7 @@
     formatQty: formatQty,
     formatNum: formatNum,
     formatMinutes: formatMinutes,
+    servingsUnit: servingsUnit,
     totalMinutes: totalMinutes,
     loadRecipes: loadRecipes,
     paintChrome: paintChrome,

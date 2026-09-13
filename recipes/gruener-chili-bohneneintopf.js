@@ -7,13 +7,13 @@ recipe({
   images: [],
   servings: 6,
   servingsUnit: "Schalen",
+  servingsUnitOne: "Schale",
   times: { prep: 20, cook: 50 },
   difficulty: "Einfach",
   intro:
     "Das Anrösten der Chilis ist der einzige Schritt, auf den es ankommt. " +
     "Alles danach ist nur Köcheln. Bewusst ein großer Topf — er lässt sich gut " +
     "einfrieren und der Geschmack setzt sich über Nacht.",
-  equipment: ["Schwerer Topf oder Bräter", "Standmixer oder Pürierstab", "Backblech"],
   ingredients: [
     { heading: "Chili-Basis" },
     { qty: 6, name: "Poblano-Paprika" },

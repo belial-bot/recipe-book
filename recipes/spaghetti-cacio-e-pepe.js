@@ -7,6 +7,7 @@ recipe({
   images: [],
   servings: 2,
   servingsUnit: "Portionen",
+  servingsUnitOne: "Portion",
   times: { prep: 5, cook: 12 },
   difficulty: "Mittel",
   intro:
@@ -18,10 +19,7 @@ recipe({
     protein: 26,
     carbs: 76,
     fat: 21,
-    saturates: 12,
-    salt: 2.2,
   },
-  equipment: ["Weite Pfanne", "Feine Reibe", "Mörser"],
   ingredients: [
     { qty: 200, unit: "g", name: "Spaghetti", note: "oder Tonnarelli" },
     { qty: 90, unit: "g", name: "Pecorino Romano", note: "fein gerieben" },

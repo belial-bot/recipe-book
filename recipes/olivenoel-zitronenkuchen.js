@@ -7,6 +7,7 @@ recipe({
   images: [],
   servings: 10,
   servingsUnit: "Stücke",
+  servingsUnitOne: "Stück",
   times: { prep: 15, cook: 45, rest: 30 },
   difficulty: "Einfach",
   intro:
@@ -17,13 +18,8 @@ recipe({
     kcal: 385,
     protein: 5,
     carbs: 46,
-    sugar: 27,
     fat: 20,
-    saturates: 3,
-    salt: 0.4,
-    per: "pro Stück",
   },
-  equipment: ["Springform 23 cm", "Schneebesen", "Zestenreißer", "Holzspieß"],
   ingredients: [
     { heading: "Teig" },
     { qty: 3, name: "Eier", note: "Größe L" },

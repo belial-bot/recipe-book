@@ -26,8 +26,9 @@ recipe({
   // Frei wählbar. Wird mitdurchsucht, aber nicht auf der Seite angezeigt.
   tags: ["Japanisch", "Feierabend", "Vegetarisch"],
 
-  // Bilder in /assets/images/ ablegen. Das erste ist das Titelbild.
-  // Liste leer lassen -> ein Platzhalter wird gezeichnet.
+  // Bilder in /assets/images/ ablegen. Alle laufen als Karussell im Kopf
+  // der Rezeptseite. Das erste ist das Titelbild — es steht auf der
+  // Übersichtskarte. Liste leer lassen -> ein Platzhalter wird gezeichnet.
   images: [
     // "assets/images/miso-aubergine-1.jpg",
   ],
@@ -35,6 +36,7 @@ recipe({
   // Bezugsgröße. Alle Mengen skalieren von dieser Zahl aus.
   servings: 2,
   servingsUnit: "Portionen", // z. B. "Portionen", "Stücke", "Gläser"
+  servingsUnitOne: "Portion",   // für "1 Portion"
 
   // Minuten. Einzelne Felder dürfen fehlen.
   times: { prep: 10, cook: 25, rest: 0 },
@@ -47,20 +49,14 @@ recipe({
     "machst, wo die Fallstricke liegen.",
 
   // OPTIONAL. Ganzer Block löschbar — dann erscheint kein Nährwert-Abschnitt.
-  // Werte pro Portion. Einzelne Zeilen weglassen ist ebenfalls in Ordnung.
+  // Werte pro Portion; die Seite rechnet sie auf die eingestellte
+  // Portionszahl hoch. Einzelne Zeilen weglassen ist ebenfalls in Ordnung.
   nutrition: {
     kcal: 320,
     protein: 8,
     carbs: 34,
-    sugar: 18,
     fat: 16,
-    saturates: 2,
-    fibre: 9,
-    salt: 1.4,
-    // per: "pro Stück",   // überschreibt "pro Portion"
   },
-
-  equipment: ["Backblech", "Backpinsel", "Kleine Schüssel"],
 
   // Zwei Schreibweisen:
   //   { qty: 200, unit: "g", name: "Mehl", note: "gesiebt" }  <- skaliert mit
