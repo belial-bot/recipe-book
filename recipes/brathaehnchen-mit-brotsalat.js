@@ -7,6 +7,7 @@ recipe({
   images: [],
   servings: 4,
   servingsUnit: "Portionen",
+  servingsUnitOne: "Portion",
   times: { prep: 25, cook: 60, rest: 15 },
   difficulty: "Mittel",
   intro:
@@ -18,15 +19,7 @@ recipe({
     protein: 46,
     carbs: 41,
     fat: 36,
-    saturates: 9,
-    fibre: 4,
-    salt: 2.8,
   },
-  equipment: [
-    "Gusseiserne Pfanne oder kleine Bratform",
-    "Einstichthermometer",
-    "Große Rührschüssel",
-  ],
   ingredients: [
     { heading: "Huhn" },
     { qty: 1.4, unit: "kg", name: "Hähnchen", note: "ganz" },

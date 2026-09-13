@@ -9,8 +9,12 @@ images: [
 ],
 ```
 
-Das **erste Bild ist das Titelbild** — es erscheint auf der Übersichtskarte und
-hinter dem Rezepttitel. Der Rest landet weiter unten in der Galerie.
+Alle Bilder laufen als **Karussell hinter dem Rezepttitel**: Pfeile, Punkte,
+Wischen auf dem Handy, und alle paar Sekunden rückt es von selbst weiter. Ein
+Klick auf die Lupe oben rechts zeigt das aktuelle Bild groß.
+
+Das **erste Bild ist das Titelbild** — es steht auf der Übersichtskarte und
+eröffnet das Karussell. Ein einzelnes Bild bleibt einfach stehen.
 
 Ein paar Gewohnheiten, die das aufgeräumt halten:
 

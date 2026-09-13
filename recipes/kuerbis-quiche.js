@@ -26,8 +26,9 @@ recipe({
   // Frei wählbar. Wird mitdurchsucht, aber nicht auf der Seite angezeigt.
   tags: ["Kürbis"],
 
-  // Bilder in /assets/images/ ablegen. Das erste ist das Titelbild.
-  // Liste leer lassen -> ein Platzhalter wird gezeichnet.
+  // Bilder in /assets/images/ ablegen. Alle laufen als Karussell im Kopf
+  // der Rezeptseite. Das erste ist das Titelbild — es steht auf der
+  // Übersichtskarte. Liste leer lassen -> ein Platzhalter wird gezeichnet.
   images: [
     "assets/images/kuerbis-quiche-1.jpg",
   ],
@@ -35,6 +36,7 @@ recipe({
   // Bezugsgröße. Alle Mengen skalieren von dieser Zahl aus.
   servings: 4,
   servingsUnit: "Portionen", // z. B. "Portionen", "Stücke", "Gläser"
+  servingsUnitOne: "Portion",   // für "1 Portion"
 
   // Minuten. Einzelne Felder dürfen fehlen.
   times: { prep: 25, cook: 45, rest: 0 },
@@ -46,20 +48,14 @@ recipe({
     "Diese herzhafte Kürbis-Quiche kombiniert einen knusprigen Mürbeteig mit einer cremigen Füllung aus aromatischem Hokkaido, Schinken und geschmolzenem Käse. Sie lässt sich unkompliziert zubereiten und ist sowohl warm als auch kalt ein absoluter Genuss.",
 
   // OPTIONAL. Ganzer Block löschbar — dann erscheint kein Nährwert-Abschnitt.
-  // Werte pro Portion. Einzelne Zeilen weglassen ist ebenfalls in Ordnung.
+  // Werte pro Portion; die Seite rechnet sie auf die eingestellte
+  // Portionszahl hoch. Einzelne Zeilen weglassen ist ebenfalls in Ordnung.
   nutrition: {
     kcal: 800,
     protein: 30,
     carbs: 50,
-    sugar: 10,
     fat: 55,
-    saturates: 30,
-    fibre: 5,
-    salt: 2.5,
-    // per: "pro Stück",   // überschreibt "pro Portion"
   },
-
-  equipment: ["Springform", "Nudelholz", "Backpinsel"],
 
   // Zwei Schreibweisen:
   //   { qty: 200, unit: "g", name: "Mehl", note: "gesiebt" }  <- skaliert mit

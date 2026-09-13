@@ -100,6 +100,17 @@ und Ähnliches. `{ heading: "Für die Glasur" }` beginnt eine Zwischenüberschri
 "Nur die Anweisung."
 ```
 
+**Portionen** sind die Bezugsgröße, von der aus alles rechnet:
+
+```js
+servings: 4,
+servingsUnit: "Portionen",
+servingsUnitOne: "Portion",   // optional, sonst wird der Plural benutzt
+```
+
+`servingsUnitOne` ist nur Kosmetik am Regler und über den Nährwerten, damit
+dort „1 Portion" statt „1 Portionen" steht. Bei „Stück" o. Ä. kann es weg.
+
 **Zeiten** in Minuten. `total` wird addiert, wenn du es nicht selbst setzt:
 
 ```js
@@ -111,14 +122,20 @@ Einzelne Zeilen weglassen geht auch:
 
 ```js
 nutrition: {
-  kcal: 385, protein: 5, carbs: 46, sugar: 27,
-  fat: 20, saturates: 3, fibre: 4, salt: 0.4,
-  per: "pro Stück",     // optional, sonst "pro Portion"
+  kcal: 385, protein: 5, carbs: 46, fat: 20,
 }
 ```
 
-Die Werte gelten pro Portion und skalieren deshalb **nicht** mit der
-Portionszahl mit.
+Vier Werte, mehr zeigt die Seite nicht an. Sie gelten **pro Portion** — die
+Seite rechnet sie auf die Portionszahl hoch, die oben am Regler steht. Stellst
+du auf 6 Portionen, stehen dort die Nährwerte für 6 Portionen.
+
+Hat ein Rezept gar keine `servings`, lässt sich nichts hochrechnen. Dann steht
+„pro Portion" darüber, oder was in `per` steht:
+
+```js
+nutrition: { kcal: 385, protein: 5, carbs: 46, fat: 20, per: "pro Glas" }
+```
 
 **Bilder** — siehe `assets/images/README.md`.
 
@@ -158,7 +175,7 @@ Bildschirm hinzufügen**. Dann verhält sie sich wie eine App.
 
 ## Was die Seiten können
 
-**Übersicht** — Live-Suche über Titel, Zutaten, Schlagwörter und Ausstattung;
+**Übersicht** — Live-Suche über Titel, Zutaten und Schlagwörter;
 Kategoriefilter aus `config.js`; Sortierung nach Neueste, A–Z, Schnellste oder
 Favoriten; „Überrasch mich" für ein zufälliges Rezept. `/` springt überall ins
 Suchfeld, `Esc` leert es. Die Karten gleiten beim Filtern an ihre neue Position,
@@ -168,9 +185,10 @@ statt zu springen.
 Rezepttitel. Gemerkt wird das im Browser des jeweiligen Geräts, nicht in einer
 Datei — Handy und Laptop führen also getrennte Listen.
 
-**Rezeptseite** — ein Portionsregler, der jede Menge live umrechnet;
-Zutaten und Schritte lassen sich antippen und abhaken (pro Rezept gemerkt);
-Bildergalerie mit Lightbox; Lesefortschritt; optionale Nährwerte; und der
+**Rezeptseite** — ein Portionsregler, der jede Menge live umrechnet, Nährwerte
+eingeschlossen; Zutaten und Schritte lassen sich antippen und abhaken (pro
+Rezept gemerkt); ein Bilderkarussell im Kopf, das von selbst weiterläuft, mit
+Pfeilen, Punkten, Wischgeste und Lightbox; Lesefortschritt; und der
 **Kochmodus**: größere Schrift, weniger Drumherum, und auf unterstützten
 Geräten bleibt der Bildschirm wach, solange die Hände voll Mehl sind.
 

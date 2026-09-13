@@ -14,23 +14,65 @@
     return m ? decodeURIComponent(m[1].replace(/\+/g, " ")) : "";
   }
 
-  /* --- hero --------------------------------------------------------------- */
+  /* --- hero ----------------------------------------------------------------
+     Every image in the recipe belongs to the header. One photo is a still
+     header; two or more turn it into a carousel that advances on its own.
+     `images[0]` stays the cover everywhere else (overview card, lightbox
+     entry point), so the first entry is still the one that matters most.
+     -------------------------------------------------------------------- */
+
+  var slide = 0;             // index of the visible header image
+  var autoTimer = null;
+  var autoHeld = false;      // pointer or keyboard focus is resting on the header
+  var AUTO_MS = 6000;        // a slow, readable cadence — nobody is browsing here
 
   function renderHero() {
     var hero = document.getElementById("hero");
-    var hasPhoto = R.images.length > 0;
+    var imgs = R.images;
+    var hasPhoto = imgs.length > 0;
+    var many = imgs.length > 1;
+
     hero.className = "rhero " + (hasPhoto ? "rhero--photo" : "rhero--flat");
 
     // Only the category, so the label matches the filter buttons on the
     // overview exactly. Tags stay searchable but are not shown here.
     var eyebrow = R.category || "";
 
-    hero.innerHTML =
-      (hasPhoto
-        ? '<div class="rhero__media"><img src="' + RB.esc(R.images[0]) + '" alt="" ' +
-          'data-fallback="' + RB.esc(R.title) + '" decoding="async"></div>' +
-          '<div class="rhero__scrim"></div>'
-        : "") +
+    // Each slide wraps its image, so a broken path can be swapped for the
+    // drawn placeholder without the carousel losing track of the slide.
+    var mediaHTML = hasPhoto
+      ? '<div class="rhero__media">' + imgs.map(function (src, i) {
+          return '<div class="rhero__slide' + (i === 0 ? " is-on" : "") + '">' +
+            '<img src="' + RB.esc(src) + '" alt="" data-fallback="' + RB.esc(R.title) +
+            '" decoding="async"' + (i === 0 ? "" : ' loading="lazy"') + "></div>";
+        }).join("") + "</div>" + '<div class="rhero__scrim"></div>'
+      : "";
+
+    var dotsHTML = many
+      ? '<div class="rhero__dots">' + imgs.map(function (_, i) {
+          return '<button type="button" class="rhero__dot' + (i === 0 ? " is-on" : "") +
+            '" data-go="' + i + '" aria-label="' +
+            RB.t.imageGo.replace("%s", i + 1) + '" aria-current="' + (i === 0) + '"></button>';
+        }).join("") + "</div>"
+      : "";
+
+    var controlsHTML = hasPhoto
+      ? '<div class="rhero__controls">' +
+          (many
+            ? '<button type="button" class="rhero__nav rhero__nav--prev" data-step="-1" ' +
+                'aria-label="' + RB.t.imagePrev + '">‹</button>' +
+              '<button type="button" class="rhero__nav rhero__nav--next" data-step="1" ' +
+                'aria-label="' + RB.t.imageNext + '">›</button>'
+            : "") +
+          '<button type="button" class="rhero__zoom" aria-label="' + RB.t.imageZoom + '">' +
+            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" ' +
+              'stroke-linecap="round" aria-hidden="true">' +
+              '<path d="M14 4h6v6M20 4l-7 7M10 20H4v-6M4 20l7-7"/></svg>' +
+          "</button>" + dotsHTML +
+        "</div>"
+      : "";
+
+    hero.innerHTML = mediaHTML +
       '<div class="rhero__inner">' +
         (eyebrow ? '<span class="rhero__eyebrow tag-label">' + RB.esc(eyebrow) + "</span>" : "") +
         '<div class="rhero__row">' +
@@ -38,21 +80,94 @@
           RB.starHTML(R.slug, "fav--hero") +
         "</div>" +
         (R.subtitle ? '<p class="rhero__sub">' + RB.esc(R.subtitle) + "</p>" : "") +
-      "</div>";
+      "</div>" + controlsHTML;
 
     RB.wireImageFallbacks(hero);
-    if (hasPhoto && !RB.reducedMotion) parallax(hero.querySelector(".rhero__media img"));
+    if (hasPhoto) wireCarousel(hero);
+    if (hasPhoto && !RB.reducedMotion) parallax(hero.querySelector(".rhero__media"));
+  }
+
+  function wireCarousel(hero) {
+    hero.addEventListener("click", function (e) {
+      var nav = e.target.closest(".rhero__nav");
+      if (nav) return goSlide(slide + Number(nav.dataset.step), true);
+      var dot = e.target.closest(".rhero__dot");
+      if (dot) return goSlide(Number(dot.dataset.go), true);
+      if (e.target.closest(".rhero__zoom")) openLightbox(slide);
+    });
+
+    if (R.images.length < 2) return;
+
+    // Swipe, because on a phone that is how everyone tries it first.
+    var startX = 0, startY = 0, tracking = false;
+    hero.addEventListener("touchstart", function (e) {
+      if (e.touches.length !== 1) return;
+      tracking = true;
+      startX = e.touches[0].clientX;
+      startY = e.touches[0].clientY;
+    }, { passive: true });
+    hero.addEventListener("touchend", function (e) {
+      if (!tracking) return;
+      tracking = false;
+      var t = e.changedTouches[0];
+      var dx = t.clientX - startX;
+      if (Math.abs(dx) > 45 && Math.abs(dx) > Math.abs(t.clientY - startY)) {
+        goSlide(slide + (dx < 0 ? 1 : -1), true);
+      }
+    }, { passive: true });
+
+    // Hold still while it is being looked at, or while the tab is away. The
+    // hold outlives a click on the arrows, so working through the images by
+    // hand doesn't hand control back mid-look.
+    ["mouseenter", "focusin"].forEach(function (ev) {
+      hero.addEventListener(ev, function () { autoHeld = true; stopAuto(); });
+    });
+    ["mouseleave", "focusout"].forEach(function (ev) {
+      hero.addEventListener(ev, function () { autoHeld = false; startAuto(); });
+    });
+    document.addEventListener("visibilitychange", function () {
+      if (document.visibilityState === "visible") startAuto(); else stopAuto();
+    });
+
+    startAuto();
+  }
+
+  function goSlide(i, manual) {
+    var n = R.images.length;
+    if (n < 2) return;
+    slide = (i % n + n) % n;
+
+    document.querySelectorAll(".rhero__slide").forEach(function (el, k) {
+      el.classList.toggle("is-on", k === slide);
+    });
+    document.querySelectorAll(".rhero__dot").forEach(function (el, k) {
+      el.classList.toggle("is-on", k === slide);
+      el.setAttribute("aria-current", String(k === slide));
+    });
+
+    if (manual) startAuto();          // a tap buys a fresh full interval
+  }
+
+  function startAuto() {
+    stopAuto();
+    if (R.images.length < 2 || RB.reducedMotion) return;
+    if (autoHeld || document.visibilityState === "hidden") return;
+    autoTimer = setInterval(function () { goSlide(slide + 1, false); }, AUTO_MS);
+  }
+
+  function stopAuto() {
+    if (autoTimer) { clearInterval(autoTimer); autoTimer = null; }
   }
 
   /* The hero image drifts at roughly a third of scroll speed. */
-  function parallax(img) {
-    if (!img) return;
+  function parallax(media) {
+    if (!media) return;
     var ticking = false;
     function frame() {
-      var hero = img.closest(".rhero");
+      var hero = media.closest(".rhero");
       var limit = (hero ? hero.offsetHeight : 500) * 0.11;   // the -12% overhang
       var shift = Math.min(window.scrollY * 0.28, limit);
-      img.style.transform = "translate3d(0," + shift.toFixed(1) + "px,0)";
+      media.style.transform = "translate3d(0," + shift.toFixed(1) + "px,0)";
       ticking = false;
     }
     window.addEventListener("scroll", function () {
@@ -96,7 +211,8 @@
           '<div class="yield__readout">' +
             '<button type="button" class="stepper" data-step="-1" aria-label="' + RB.t.fewer + '">−</button>' +
             '<span class="yield__num" id="yieldNum" role="status" aria-live="polite">' + servings + "</span>" +
-            '<span class="yield__unit">' + RB.esc(R.servingsUnit) + "</span>" +
+            '<span class="yield__unit" id="yieldUnit">' +
+              RB.esc(RB.servingsUnit(R, servings)) + "</span>" +
             '<button type="button" class="stepper" data-step="1" aria-label="' + RB.t.more + '">+</button>' +
           "</div>" +
         "</div>"
@@ -127,8 +243,10 @@
         if (next < 1 || next > 99) return;
         servings = next;
         document.getElementById("yieldNum").textContent = servings;
+        document.getElementById("yieldUnit").textContent = RB.servingsUnit(R, servings);
         flash(document.getElementById("yieldNum"));
         paintQuantities(true);
+        paintNutrition(true);
       });
     }
 
@@ -182,16 +300,6 @@
     setTimeout(function () { el.classList.remove("is-ticking"); }, 320);
   }
 
-  /* --- equipment ---------------------------------------------------------- */
-
-  function renderEquipment() {
-    var box = document.getElementById("equipment");
-    if (!R.equipment.length) { box.remove(); return; }
-    box.innerHTML = '<h2 class="h2">' + RB.t.equipment + '</h2><ul class="equip">' +
-      R.equipment.map(function (e) { return "<li>" + RB.esc(e) + "</li>"; }).join("") +
-      "</ul>";
-  }
-
   /* --- nutrition (optional) ----------------------------------------------- */
 
   function renderNutrition() {
@@ -205,13 +313,42 @@
     if (!keys.length) { box.remove(); return; }
 
     box.innerHTML = '<h2 class="h2">' + RB.t.nutrition + "</h2>" +
-      '<p class="nutri__scope tag-label">' + RB.esc(n.per || RB.t.perServing) + "</p>" +
+      '<p class="nutri__scope tag-label" id="nutriScope"></p>' +
       '<dl class="nutri">' + keys.map(function (k) {
-        var unit = RB.t.nutriUnits[k] || "";
-        var val = typeof n[k] === "number" ? RB.formatNum(n[k]) : RB.esc(n[k]);
         return '<div class="nutri__row"><dt>' + RB.esc(RB.t.nutriLabels[k]) + "</dt>" +
-          "<dd>" + val + (unit ? " " + unit : "") + "</dd></div>";
+          '<dd class="nutri__val" data-base="' + RB.esc(String(n[k])) +
+          '" data-unit="' + RB.esc(RB.t.nutriUnits[k] || "") + '"></dd></div>';
       }).join("") + "</dl>";
+
+    paintNutrition(false);
+  }
+
+  /* The macros follow the portion stepper. Recipe files hold the figures for
+     one serving; the page shows the total for however many are set above. A
+     recipe without a servings count can't scale, so it keeps its own label. */
+  function paintNutrition(animate) {
+    var scope = document.getElementById("nutriScope");
+    if (!scope) return;
+
+    var n = R.nutrition || {};
+    var scalable = R.servings > 0;
+
+    scope.textContent = scalable
+      ? RB.t.nutriFor + " " + servings + " " + RB.servingsUnit(R, servings)
+      : (n.per || RB.t.perServing);
+
+    document.querySelectorAll(".nutri__val").forEach(function (el) {
+      var base = Number(el.dataset.base);
+      var unit = el.dataset.unit;
+      // Anything that isn't a plain number ("ca. 300") can only be shown as is.
+      var next = isFinite(base)
+        ? RB.formatNum(base * (scalable ? servings : 1)) + (unit ? " " + unit : "")
+        : el.dataset.base;
+      if (el.textContent !== next) {
+        el.textContent = next;
+        if (animate) flash(el);
+      }
+    });
   }
 
   /* --- steps -------------------------------------------------------------- */
@@ -267,7 +404,7 @@
     updateProgress();
   }
 
-  /* --- intro, notes, source, gallery -------------------------------------- */
+  /* --- intro, notes, source ----------------------------------------------- */
 
   function renderProse() {
     var intro = document.getElementById("intro");
@@ -294,25 +431,10 @@
     } else { src.remove(); }
   }
 
-  function renderGallery() {
-    var box = document.getElementById("gallery");
-    if (R.images.length < 2) { box.remove(); return; }
-
-    box.innerHTML = '<h2 class="h2">' + RB.t.gallery + '</h2><div class="gallery">' +
-      R.images.map(function (src, i) {
-        return '<button type="button" data-idx="' + i + '" aria-label="Bild ' + (i + 1) + '">' +
-          '<img src="' + RB.esc(src) + '" alt="" loading="lazy" data-fallback="' +
-          RB.esc(R.title) + '"></button>';
-      }).join("") + "</div>";
-
-    RB.wireImageFallbacks(box);
-    box.addEventListener("click", function (e) {
-      var btn = e.target.closest("button[data-idx]");
-      if (btn) openLightbox(Number(btn.dataset.idx));
-    });
-  }
-
-  /* --- lightbox ----------------------------------------------------------- */
+  /* --- lightbox ------------------------------------------------------------
+     Opened from the expand button on the header, starting at whichever image
+     the carousel is showing.
+     -------------------------------------------------------------------- */
 
   var lb, lbImg, lbIndex = 0;
 
@@ -321,10 +443,12 @@
       lb = document.createElement("div");
       lb.className = "lightbox";
       lb.innerHTML =
-        '<button class="lightbox__close" aria-label="Schließen">✕</button>' +
-        '<button class="lightbox__nav lightbox__nav--prev" aria-label="Vorheriges Bild">‹</button>' +
+        '<button class="lightbox__close" aria-label="' + RB.t.imageClose + '">✕</button>' +
+        '<button class="lightbox__nav lightbox__nav--prev" aria-label="' +
+          RB.t.imagePrev + '">‹</button>' +
         '<img alt="">' +
-        '<button class="lightbox__nav lightbox__nav--next" aria-label="Nächstes Bild">›</button>';
+        '<button class="lightbox__nav lightbox__nav--next" aria-label="' +
+          RB.t.imageNext + '">›</button>';
       document.body.appendChild(lb);
       lbImg = lb.querySelector("img");
 
@@ -344,6 +468,7 @@
     lbImg.src = R.images[i];
     lb.classList.add("is-open");
     document.body.style.overflow = "hidden";
+    stopAuto();
   }
 
   function step(d) {
@@ -354,6 +479,8 @@
   function closeLightbox() {
     lb.classList.remove("is-open");
     document.body.style.overflow = "";
+    // Leave the header on whatever was last looked at, then carry on.
+    goSlide(lbIndex, true);
   }
 
   /* --- cook mode ---------------------------------------------------------- */
@@ -468,10 +595,8 @@
       renderRail();
       renderProse();
       renderIngredients();
-      renderEquipment();
       renderNutrition();
       renderSteps();
-      renderGallery();
       renderPager(list);
       wireCookMode();
       RB.wireStars(document);

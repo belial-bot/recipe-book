@@ -597,11 +597,22 @@ a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset:
   position: absolute;
   inset: -12% 0 -12%;
   z-index: 0;
+  will-change: transform;
 }
-.rhero__media img {
+
+/* One slide per image, stacked. Only the active one is opaque, so the
+   carousel crossfades instead of jumping. */
+.rhero__slide {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity .8s var(--ease);
+}
+.rhero__slide.is-on { opacity: 1; }
+.rhero__slide img,
+.rhero__slide .ph {
   width: 100%; height: 100%;
   object-fit: cover;
-  will-change: transform;
 }
 .rhero__scrim {
   position: absolute; inset: 0; z-index: 1;
@@ -640,6 +651,71 @@ a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset:
   font-size: clamp(1rem, 2vw, 1.15rem);
   color: var(--muted);
   line-height: 1.5;
+}
+
+/* Hero carousel — arrows, dots and the expand button sit above the scrim. */
+.rhero__controls { position: absolute; inset: 0; z-index: 3; pointer-events: none; }
+.rhero__controls > * { pointer-events: auto; }
+
+.rhero__nav,
+.rhero__zoom {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(244, 247, 244, .28);
+  border-radius: 50%;
+  background: rgba(10, 14, 13, .34);
+  color: #f4f7f4;
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  cursor: pointer;
+  transition: background .2s, border-color .2s, transform .2s var(--ease);
+}
+.rhero__nav:hover,
+.rhero__zoom:hover { background: rgba(10, 14, 13, .62); border-color: rgba(244, 247, 244, .6); }
+.rhero__nav:active,
+.rhero__zoom:active { transform: scale(.94); }
+
+.rhero__nav {
+  top: 50%;
+  width: 2.5rem; height: 2.5rem;
+  margin-top: -1.25rem;
+  font-size: 1.6rem;
+  line-height: 1;
+  padding-bottom: .18em;                 /* optically centre the chevron */
+}
+.rhero__nav--prev { left: clamp(.6rem, 2vw, 1.4rem); }
+.rhero__nav--next { right: clamp(.6rem, 2vw, 1.4rem); }
+
+.rhero__zoom {
+  top: clamp(.6rem, 2vw, 1.4rem);
+  right: clamp(.6rem, 2vw, 1.4rem);
+  width: 2.2rem; height: 2.2rem;
+}
+.rhero__zoom svg { width: 15px; height: 15px; }
+
+.rhero__dots {
+  position: absolute;
+  right: clamp(.9rem, 3vw, 2rem);
+  bottom: clamp(1.1rem, 3vw, 1.9rem);
+  display: flex;
+  gap: .45rem;
+}
+.rhero__dot {
+  width: 7px; height: 7px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(244, 247, 244, .42);
+  cursor: pointer;
+  transition: background .25s, width .35s var(--ease);
+}
+.rhero__dot:hover { background: rgba(244, 247, 244, .75); }
+.rhero__dot.is-on { width: 20px; border-radius: 100px; background: #f4f7f4; }
+
+/* On a narrow screen the dots are enough — swiping does the rest. */
+@media (max-width: 560px) {
+  .rhero__nav { display: none; }
 }
 
 /* Meta rail — reads like a spec strip */
@@ -842,19 +918,7 @@ a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset:
 .ing__name { font-size: .965rem; line-height: 1.45; }
 .ing__note { color: var(--muted); font-size: .875rem; }
 
-/* --- 13. Equipment ------------------------------------------------------- */
-
-.equip { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: .4rem; }
-.equip li {
-  font-size: .855rem;
-  padding: .3rem .65rem;
-  border: 1px solid var(--line);
-  border-radius: 100px;
-  color: var(--ink-soft);
-  background: var(--surface);
-}
-
-/* --- 14. Steps ----------------------------------------------------------- */
+/* --- 13. Steps ----------------------------------------------------------- */
 
 .steps { list-style: none; margin: 0; padding: 0; counter-reset: step; max-width: var(--read); }
 
@@ -938,7 +1002,7 @@ a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset:
   white-space: nowrap;
 }
 
-/* --- 15. Notes, source, gallery ----------------------------------------- */
+/* --- 14. Notes and source ------------------------------------------------ */
 
 .notes { margin: 0; padding: 0 0 0 1.1rem; max-width: var(--read); }
 .notes li { margin: .45rem 0; color: var(--ink-soft); line-height: 1.6; }
@@ -952,25 +1016,7 @@ a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset:
   color: var(--muted);
 }
 
-.gallery {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: .6rem;
-  max-width: var(--read);
-}
-.gallery button {
-  padding: 0;
-  border: 1px solid var(--line);
-  border-radius: var(--r-md);
-  overflow: hidden;
-  background: var(--surface-2);
-  aspect-ratio: 4 / 3;
-  transition: transform .35s var(--ease), border-color .25s;
-}
-.gallery button:hover { transform: translateY(-3px); border-color: var(--accent); }
-.gallery img { width: 100%; height: 100%; object-fit: cover; }
-
-/* --- 15b. Nutrition ------------------------------------------------------ */
+/* --- 15. Nutrition ------------------------------------------------------- */
 
 .nutri__scope { display: block; margin: -.4rem 0 .7rem; }
 
@@ -990,7 +1036,9 @@ a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset:
   font-size: .9rem;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
+  transition: color .25s, transform .25s var(--ease);
 }
+.nutri__val.is-ticking { color: var(--accent); transform: translateY(-1px); }
 
 /* --- 16. Prev / next ----------------------------------------------------- */
 
@@ -1090,7 +1138,6 @@ a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset:
 
 body.cook-mode { --read: 46rem; }
 body.cook-mode .rhero,
-body.cook-mode .gallery,
 body.cook-mode .pager,
 body.cook-mode .footer,
 body.cook-mode .intro { display: none; }
@@ -1171,7 +1218,7 @@ body.cook-mode .cookbtn {
 }
 
 @media print {
-  .topbar, .rhero__media, .rhero__scrim, .gallery, .pager, .footer,
+  .topbar, .rhero__media, .rhero__scrim, .rhero__controls, .pager, .footer,
   .cookbtn, .readbar, .fav, .yield__readout .stepper, .progress { display: none !important; }
   body { background: #fff; color: #000; }
   .rhero { background: #fff; border: 0; }
